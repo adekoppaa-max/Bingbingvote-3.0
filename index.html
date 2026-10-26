@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>@bingbingvote – K-Pop Voting Specialist 💛🌸</title>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@600;700&family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+body{font-family:'Quicksand',sans-serif;background:#FFFDF0;color:#374151}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:#FFFDF0;background-image:radial-gradient(#FDE68A 1.5px,transparent 1.5px),radial-gradient(#FBCFE8 1.5px,#FFFDF0 1.5px);background-size:28px 28px;background-position:0 0,14px 14px;opacity:.7}
+.brand{font-family:'Comfortaa',cursive;font-weight:700}
+.card{background:#ffffff;border:2.5px solid #FBCFE8;border-radius:1.75rem;box-shadow:0 8px 20px rgba(251,207,232,0.35)}
+@media (prefers-reduced-motion:no-preference){.card{transition:transform .2s ease,box-shadow .2s ease}.card:hover{transform:translateY(-3px);box-shadow:0 12px 24px rgba(245,158,11,0.2)}}
+.btn{background:linear-gradient(135deg,#FEF08A,#FDE047);color:#451A03;font-family:'Fredoka',sans-serif;font-weight:600;border:2.5px solid #F59E0B;border-radius:9999px;padding:.55rem 1.25rem;transition:.2s cubic-bezier(0.34, 1.56, 0.64, 1)}
+.btn:hover{transform:scale(1.04);background:linear-gradient(135deg,#FDE047,#FACC15);box-shadow:0 4px 12px rgba(245,158,11,0.3)}
+.btn.alt{background:#FFF;border:2.5px solid #FBCFE8;color:#831843}
+.btn.alt:hover{background:#FCE7F3;box-shadow:0 4px 12px rgba(251,207,232,0.4)}
+.inp{width:100%;border:2px solid #FDE68A;border-radius:1rem;padding:.5rem .85rem;background:#FEFCE8;outline:none;font-weight:600;color:#1F2937}
+.inp:focus{border-color:#F59E0B;box-shadow:0 0 0 3px rgba(253,224,71,0.5)}
+.pill{padding:.35rem 1rem;border-radius:9999px;border:2px solid #FDE68A;font-family:'Fredoka',sans-serif;font-size:.85rem;font-weight:500;background:#FFF;color:#78350F;transition:.15s}
+.pill.on{background:#FDE047;border-color:#F59E0B;color:#451A03;box-shadow:0 2px 8px rgba(250,204,21,0.4)}
+.hbtn{width:2.6rem;height:2.6rem;border-radius:9999px;font-size:1.1rem;border:2px solid #FDE68A;background:#FFF;color:#D97706;display:inline-flex;align-items:center;justify-content:center}.hbtn:hover,.hbtn.on{background:#FEF08A;border-color:#F59E0B}
+.mi{display:flex;gap:.75rem;align-items:center;width:100%;padding:.75rem 1rem;border-radius:1.2rem;font-family:'Fredoka',sans-serif;font-weight:600;text-align:left;color:#78350F}.mi:hover,.mi.on{background:#FEF08A;color:#451A03}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+#tickIn{display:inline-block;padding-left:100%;animation:tick 30s linear infinite}
+@media print{body *{visibility:hidden}body::before{display:none}#rcCard,#rcCard *{visibility:visible}#rcCard{position:absolute;left:0;top:0;width:100%}}
+.pop{animation:pop .25s cubic-bezier(0.34, 1.56, 0.64, 1)}
+@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+
+.dpill{display:inline-flex;align-items:center;gap:.3rem;border:2px solid #F59E0B;border-radius:9999px;padding:.2rem .7rem;font-size:.7rem;font-family:'Fredoka',sans-serif;font-weight:600;background:linear-gradient(90deg,#FFFBEB,#FEF08A);box-shadow:0 0 10px rgba(250,204,21,0.6);animation:glow 2.5s ease-in-out infinite}
+.dpill.off{background:#FFF;border-color:#CBD5E1;box-shadow:none;animation:none;opacity:.7}
+@keyframes glow{0%,100%{box-shadow:0 0 4px rgba(250,204,21,.4)}50%{box-shadow:0 0 12px rgba(250,204,21,1)}}
+</style>
+</head>
+<body>
+
+<div id="ticker" class="bg-[#FEF08A] text-xs font-semibold overflow-hidden whitespace-nowrap border-b-2 border-[#FDE68A] py-1 text-[#78350F]" aria-live="off"><div id="tickIn"></div></div>
+<header class="sticky top-0 z-30 bg-[#FFFDF0]/90 backdrop-blur border-b-2 border-[#FDE68A]">
+  <div class="max-w-6xl mx-auto px-3 py-2 flex items-center justify-between gap-2">
+    <button id="menuBtn" class="hbtn" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+    <button onclick="go('home')" class="flex items-center gap-2 min-w-0" aria-label="Go to home">
+      <span id="hdAvatar" class="w-10 h-10 shrink-0 rounded-full bg-[#FEF08A] border-2 border-[#F59E0B] overflow-hidden flex items-center justify-center text-xl shadow-sm">🐝</span>
+      <span class="text-left min-w-0"><span class="brand text-lg leading-none block truncate text-[#78350F]">@bingbingvote</span><span class="text-[10px] font-bold text-[#D97706] block truncate">K-Pop Voting Specialist 🎀</span></span>
+    </button>
+    <div class="flex items-center gap-1.5">
+      <div class="flex items-center rounded-full bg-white border-2 border-[#FDE68A] p-0.5"><button id="bgmBtn" class="hbtn border-0 !w-8 !h-8 text-xs" aria-label="Toggle background music"><i class="fa-solid fa-volume-xmark"></i></button><span id="bgmName" class="hidden md:inline text-xs max-w-[90px] truncate font-bold text-[#78350F] px-1"></span><button id="nextBtn" class="hbtn border-0 !w-8 !h-8 text-xs" aria-label="Next track"><i class="fa-solid fa-forward-step"></i></button></div>
+      <button id="guideBtn" class="hbtn" aria-label="How to order"><i class="fa-solid fa-heart"></i></button>
+      <button id="cartBtn" class="hbtn relative" aria-label="Open cart"><i class="fa-solid fa-basket-shopping"></i>
+        <span id="badge" class="absolute -top-1 -right-1 bg-[#F43F5E] text-white text-[10px] font-bold min-w-5 h-5 px-1 rounded-full flex items-center justify-center border-2 border-white shadow-sm">0</span></button>
+    </div>
+  </div>
+</header>
+
+<aside id="menu" class="fixed top-0 left-0 h-full w-[78%] max-w-xs bg-[#FFFDF0] z-50 -translate-x-full transition-transform duration-300 shadow-2xl flex flex-col border-r-2 border-[#FDE68A]">
+  <div class="p-4 bg-[#FEF08A] border-b-2 border-[#FDE68A] flex items-center justify-between"><span class="brand text-lg text-[#78350F]">Menu 🎀</span><button onclick="closeMenu()" aria-label="Close menu"><i class="fa-solid fa-xmark text-xl text-[#78350F]"></i></button></div>
+  <nav class="p-3 space-y-1">
+    <button class="mi on" data-t="home" onclick="go('home')"><i class="fa-solid fa-house w-5"></i>HOME</button>
+    <button class="mi" data-t="shop" onclick="go('shop')"><i class="fa-solid fa-shop w-5"></i>SHOP</button>
+    <button class="mi" data-t="profile" onclick="go('profile')"><i class="fa-solid fa-user-sparkles w-5"></i>PROFILE</button>
+    <button class="mi" data-t="testi" onclick="go('testi')"><i class="fa-solid fa-star w-5"></i>TESTIMONIALS</button>
+    <button class="mi" onclick="openLoy()"><i class="fa-solid fa-id-card w-5"></i>LOYALTY CARD</button>
+    <button class="mi" onclick="goWm()"><i class="fa-solid fa-wand-magic-sparkles w-5"></i>WATERMARKER</button>
+    <button class="mi" data-t="admin" onclick="go('admin')"><i class="fa-solid fa-lock w-5"></i>ADMIN DASHBOARD</button>
+  </nav>
+  <div class="mt-auto p-4 text-xs font-bold text-[#D97706] text-center">Vote together, win together! 💛✨</div>
+</aside>
+
+<main class="max-w-6xl mx-auto px-4 py-6 pb-24">
+
+  <section id="home" class="space-y-6">
+    <div id="hero" class="card overflow-hidden relative bg-gradient-to-br from-[#FEF08A] via-[#FFFDF0] to-[#FCE7F3] border-[#FBCFE8]"></div>
+    <div id="events" class="grid gap-3"></div>
+    
+    <div>
+      <h2 class="brand text-xl mb-3 text-[#78350F] flex items-center gap-2"><span class="text-2xl">✨</span> Featured Apps 💛</h2>
+      <div id="fGrid" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
+      <div class="text-center mt-5"><button class="btn" onclick="go('shop')">View More Apps in Shop 🌸 →</button></div>
+    </div>
+    <div class="card p-5"><h2 class="brand text-xl mb-1 text-[#78350F]">📦 Check Order Status</h2><p class="text-xs text-[#92400E] mb-3 font-semibold">Enter your Twitter handle (@username)</p>
+      <div class="flex gap-2"><input id="oHandle" class="inp" placeholder="@username"><button id="oBtn" class="btn shrink-0">Check ✨</button></div><div id="oRes" class="space-y-2 mt-3"></div></div>
+  </section>
+
+  <section id="profilePg" class="hidden space-y-6">
+    <div id="pHero" class="card overflow-hidden relative min-h-[200px] sm:min-h-[260px] flex items-end bg-gradient-to-br from-[#FEF08A] to-[#FBCFE8]"></div>
+    <div id="pCard" class="card p-5 flex flex-col sm:flex-row items-center gap-4"></div>
+    <div id="pInfo" class="card p-5 grid sm:grid-cols-2 gap-4"></div>
+  </section>
+
+  <section id="shop" class="hidden">
+    <h2 class="brand text-2xl mb-1 text-[#78350F]">Shop 🌸</h2>
+    <div id="shopNote" class="mb-4"></div>
+    <div class="relative mb-3">
+      <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-[#D97706]"></i>
+      <input id="search" class="inp pl-10" placeholder="Search voting apps...">
+    </div>
+    <div id="cats" class="flex gap-2 flex-wrap mb-5"></div>
+    <div id="grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  </section>
+
+  <section id="testi" class="hidden">
+    <h2 class="brand text-2xl mb-1 text-[#78350F]">Testimonials 💛</h2>
+    <p class="text-sm text-[#92400E] mb-4 font-semibold">Real reviews from our lovely buyers! ✨</p>
+    <div class="grid lg:grid-cols-3 gap-5">
+      <div id="tList" class="lg:col-span-2 grid sm:grid-cols-2 gap-4 content-start"></div>
+      <form id="tForm" class="card p-5 space-y-3 h-fit">
+        <h3 class="brand text-lg text-[#78350F]">Write a review 💌</h3>
+        <input id="tName" class="inp" placeholder="Your Twitter handle (@...)" required>
+        <select id="tApp" class="inp"></select>
+        <div><label class="text-xs font-bold text-[#78350F]">Rating</label><div id="stars" class="text-2xl text-[#F59E0B] cursor-pointer select-none" role="radiogroup" aria-label="Star rating"></div></div>
+        <textarea id="tText" class="inp" rows="3" required placeholder="Tell us about your experience..."></textarea>
+        <div><label class="text-xs font-bold text-[#78350F]">Proof screenshot (optional)</label><input id="tImg" type="file" accept="image/*" class="text-xs w-full mt-1"></div>
+        <button class="btn w-full">Submit Review 💖</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="admin" class="hidden">
+    <div id="locked" class="card p-8 text-center max-w-md mx-auto">
+      <div class="text-5xl mb-3">🎀</div>
+      <h2 class="brand text-xl mb-2 text-[#78350F]">Seller Area</h2>
+      <p class="text-xs text-[#92400E] mb-4 font-semibold">Enter credentials to open admin dashboard.</p>
+      <button class="btn" onclick="openPin()">Login Admin ✨</button>
+    </div>
+    <div id="dash" class="hidden space-y-6">
+      <div class="flex justify-between items-center flex-wrap gap-2">
+        <h2 class="brand text-2xl text-[#78350F]">Admin Dashboard</h2>
+        <div class="flex gap-2">
+          <button class="btn" onclick="exportXlsx()"><i class="fa-solid fa-file-excel mr-1"></i>Export (.xlsx)</button>
+          <button class="btn alt" onclick="lock()">Lock</button>
+        </div>
+      </div>
+      <div id="aTabs" class="flex gap-2 flex-wrap">
+        <button class="pill on" data-a="stats" onclick="aTab('stats')">📊 Analytics</button>
+        <button class="pill" data-a="home" onclick="aTab('home')">🏠 Home & Banner</button>
+        <button class="pill" data-a="loy" onclick="aTab('loy')">🐝 Loyalty Manager</button>
+        <button class="pill" data-a="tm" onclick="aTab('tm')">📸 Testimonials</button>
+        <button class="pill" data-a="rc" onclick="aTab('rc')">🧾 Receipt Generator</button>
+        <button class="pill" data-a="wm" onclick="aTab('wm')">🖼️ Watermarker</button>
+        <button class="pill" data-a="cat" onclick="aTab('cat')">🛍️ Catalog</button>
+        <button class="pill" data-a="log" onclick="aTab('log')">📝 Order Logger</button></div>
+
+      <div id="at-stats" class="space-y-6"><div class="grid sm:grid-cols-3 gap-4" id="stats"></div>
+        <div class="flex gap-2 items-center flex-wrap"><input id="sSearch" class="inp !w-full sm:!w-72" placeholder="Search orders..." oninput="sLim=10;renderAdmin()"><span id="sCount" class="text-xs font-bold text-[#D97706]"></span></div>
+        <div class="card p-4 overflow-x-auto">
+          <table class="w-full text-sm min-w-[820px]">
+            <thead><tr class="text-left border-b-2 border-[#FDE68A] text-[#78350F]"><th class="p-2">Date</th><th>Buyer</th><th>App</th><th>Package / Units</th><th>Total (IDR)</th><th>Payment</th><th>Schedule</th><th>Status</th><th></th></tr></thead>
+            <tbody id="sBody"></tbody>
+          </table>
+        </div><div class="text-center"><button id="more" class="btn alt" onclick="sLim+=10;renderAdmin()">See more</button></div></div>
+
+      <div id="at-home" class="space-y-6 hidden"><form id="hForm" class="card p-5 grid sm:grid-cols-2 gap-3">
+          <h3 class="brand text-lg sm:col-span-2 text-[#78350F]">Profile Banner & Info Editor</h3>
+          <div><label class="text-xs font-bold">Banner URL</label><input id="hBanner" class="inp" placeholder="https://..."></div>
+          <div><label class="text-xs font-bold">Upload banner</label><input id="hBFile" type="file" accept="image/*" class="text-xs w-full"></div>
+          <div><label class="text-xs font-bold">Avatar URL</label><input id="hAvImg" class="inp" placeholder="https://..."></div>
+          <div><label class="text-xs font-bold">Upload avatar</label><input id="hAFile" type="file" accept="image/*" class="text-xs w-full"></div>
+          <div><label class="text-xs font-bold">Title</label><input id="hTitle" class="inp"></div>
+          <div><label class="text-xs font-bold">Subtext</label><input id="hText" class="inp"></div>
+          <div><label class="text-xs font-bold">Followers</label><input id="hFol" class="inp"></div>
+          <div><label class="text-xs font-bold">Bio</label><textarea id="hBio" class="inp" rows="1"></textarea></div>
+          <div><label class="text-xs font-bold">Business hours</label><input id="hHours" class="inp"></div>
+          <div><label class="text-xs font-bold">Social links</label><textarea id="hLinks" class="inp" rows="2"></textarea></div>
+          <div class="sm:col-span-2 flex gap-2 flex-wrap"><button class="btn">Save Changes</button><button type="button" class="btn alt" onclick="clearHomeImgs()">Remove Uploaded Images</button></div>
+        </form>
+        <div class="card p-5"><div class="flex justify-between items-center mb-3 flex-wrap gap-2"><h3 class="brand text-lg text-[#78350F]">⏰ Event Manager</h3><button class="btn text-sm" onclick="editPoll()"><i class="fa-solid fa-plus mr-1"></i>Add Event</button></div><div id="pollList" class="space-y-2"></div></div>
+        <form id="tkForm" class="card p-5 space-y-2"><h3 class="brand text-lg text-[#78350F]">📣 Ticker Announcement</h3><input id="tkText" class="inp" placeholder="Running text shown at top"><button class="btn">Save Ticker</button></form>
+        <form id="authForm" class="card p-5 grid sm:grid-cols-3 gap-3 items-end"><h3 class="brand text-lg sm:col-span-3 text-[#78350F]">🔐 Admin Password</h3>
+          <div><label class="text-xs font-bold">Current Password</label><input id="auCur" type="password" class="inp"></div>
+          <div><label class="text-xs font-bold">New Admin ID</label><input id="auId" class="inp"></div>
+          <div><label class="text-xs font-bold">New Password</label><input id="auPw" type="password" class="inp"></div>
+          <button class="btn sm:col-span-3">Update Login</button></form>
+        <form id="bForm" class="card p-5 space-y-2"><h3 class="brand text-lg text-[#78350F]">🎵 BGM Playlist</h3><textarea id="bList" class="inp" rows="4" placeholder="Title | Music Direct URL"></textarea><button class="btn">Save BGM</button></form>
+        <div class="card p-5"><div class="flex justify-between items-center mb-3 flex-wrap gap-2"><h3 class="brand text-lg text-[#78350F]">Promotional Banners</h3><button class="btn text-sm" onclick="editEv()"><i class="fa-solid fa-plus mr-1"></i>Add Banner</button></div><div id="evList" class="space-y-2"></div></div>
+      </div>
+
+      <div id="at-loy" class="space-y-6 hidden">
+        <form id="lyForm" class="card p-5 grid sm:grid-cols-6 gap-3 items-end"><h3 class="brand text-lg sm:col-span-6 text-[#78350F]">🐝 Loyalty Stamp Manager</h3>
+          <div class="sm:col-span-2"><label class="text-xs font-bold">Twitter handle</label><input id="lyH" class="inp" placeholder="@username" required></div>
+          <div><label class="text-xs font-bold">Stamps (0-9)</label><input id="lyS" type="number" min="0" max="9" value="0" class="inp"></div>
+          <div><label class="text-xs font-bold">Vouchers</label><input id="lyVc" type="number" min="0" value="0" class="inp"></div>
+          <button class="btn sm:col-span-2">Save User</button></form>
+        <form id="lyVForm" class="card p-5 flex gap-3 items-end flex-wrap"><div><label class="text-xs font-bold">Voucher USD</label><input id="lyVu" type="number" min="0" step="0.5" class="inp"></div><div><label class="text-xs font-bold">Voucher IDR</label><input id="lyVi" type="number" min="0" step="1000" class="inp"></div><button class="btn">Save Voucher Config</button></form>
+        <div class="card p-5"><div class="flex gap-2 items-center flex-wrap mb-3"><h3 class="brand text-lg text-[#78350F]">Stamp Holders</h3><input id="lySearch" class="inp !w-full sm:!w-60" placeholder="Search..." oninput="renderLoyMgr()"></div><div id="lyList" class="space-y-2"></div></div>
+      </div>
+
+      <div id="at-wm" class="space-y-6 hidden">
+        <div class="card p-5 space-y-3"><h3 class="brand text-lg text-[#78350F]">🖼️ Giveaway Watermarker</h3>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div><label class="text-xs font-bold">Image</label><input id="wmFile" type="file" accept="image/*" class="text-xs w-full"></div>
+            <div><label class="text-xs font-bold">Watermark Logo</label><input id="wmLogoF" type="file" accept="image/*" class="text-xs w-full"></div>
+            <div><label class="text-xs font-bold">Size: <span id="wmSv">25</span>%</label><input id="wmScale" type="range" min="5" max="70" value="25" class="w-full"></div>
+            <div><label class="text-xs font-bold">Opacity: <span id="wmOv">70</span>%</label><input id="wmOp" type="range" min="10" max="100" value="70" class="w-full"></div>
+            <div><label class="text-xs font-bold">Position</label><select id="wmPos" class="inp"><option value="tl">Top Left</option><option value="tr">Top Right</option><option value="bl">Bottom Left</option><option value="br" selected>Bottom Right</option><option value="tile">Tile</option></select></div>
+            <label class="flex items-center gap-2 text-sm font-bold self-end text-[#78350F]"><input id="wmTxt" type="checkbox" checked> Add @bingbingvote text</label>
+          </div>
+          <p id="wmEmpty" class="text-xs text-[#92400E] text-center py-6 font-semibold">Upload an image to start watermarking ✨</p>
+          <canvas id="wmCv" class="w-full max-w-xl mx-auto rounded-2xl border-2 border-[#FDE68A] bg-white hidden"></canvas>
+          <button id="wmDl" class="btn hidden">Download Watermarked PNG 🌸</button></div>
+      </div>
+
+      <div id="at-tm" class="space-y-6 hidden">
+        <form id="tmForm" class="card p-5 grid sm:grid-cols-6 gap-3 items-end">
+          <h3 class="brand text-lg sm:col-span-6 text-[#78350F]" id="tmT">📸 Add Testimonial</h3>
+          <div class="sm:col-span-2"><label class="text-xs font-bold">Customer handle</label><input id="tmName" class="inp" placeholder="@username" required></div>
+          <div class="sm:col-span-3"><label class="text-xs font-bold">App</label><select id="tmApp" class="inp"></select></div>
+          <div class="sm:col-span-6"><label class="text-xs font-bold">Review text</label><textarea id="tmText" class="inp" rows="2" required></textarea></div>
+          <div class="sm:col-span-3"><label class="text-xs font-bold">Upload screenshots</label><input id="tmFile" type="file" accept="image/*" multiple class="text-xs w-full"><span id="tmCnt" class="text-xs opacity-60"></span></div>
+          <div class="sm:col-span-3"><label class="text-xs font-bold">Or Image Links</label><textarea id="tmUrls" class="inp" rows="2" placeholder="https://..."></textarea></div>
+          <div class="sm:col-span-6 flex gap-2 flex-wrap"><button class="btn">Save Testimonial</button><button type="button" class="btn alt" onclick="resetTm()">Clear Form</button></div>
+        </form>
+        <div class="card p-5"><h3 class="brand text-lg text-[#78350F] mb-2">Published Testimonials</h3><div id="tmList" class="space-y-2"></div></div>
+      </div>
+
+      <div id="at-rc" class="space-y-6 hidden">
+        <div class="card p-5 space-y-3">
+          <h3 class="brand text-lg text-[#78350F]">🔳 QRIS Setup</h3>
+          <p class="text-xs text-[#92400E] font-semibold">Upload QRIS image. Rendered on receipts ONLY when payment is QRIS!</p>
+          <div class="flex flex-wrap gap-3 items-start">
+            <div class="w-36 h-36 rounded-2xl bg-[#FEFCE8] border-2 border-dashed border-[#F59E0B] flex items-center justify-center overflow-hidden"><img id="qrPrev" alt="QRIS preview" class="max-w-full max-h-full hidden"><span id="qrEmpty" class="text-xs font-semibold text-[#D97706] text-center px-2">No QRIS</span></div>
+            <div class="flex-1 min-w-[200px] space-y-2">
+              <input id="qrFile" type="file" accept="image/*" class="text-xs w-full">
+              <button type="button" class="btn alt text-xs" onclick="qrClear()">Remove QRIS</button>
+            </div>
+          </div>
+        </div>
+        <div class="card p-5 space-y-3"><h3 class="brand text-lg text-[#78350F]">💳 Payment Account Details</h3>
+          <form id="payForm" class="space-y-3"><div id="payFields" class="grid sm:grid-cols-2 gap-3"></div><button class="btn">Save Accounts</button></form></div>
+        
+        <form id="rcForm" class="card p-5 grid sm:grid-cols-6 gap-3 items-end">
+          <h3 class="brand text-lg sm:col-span-6 text-[#78350F]">🧾 Digital Receipt Generator</h3>
+          <div class="sm:col-span-3"><label class="text-xs font-bold">Customer handle</label><input id="rcBuyer" class="inp" placeholder="@username" required></div>
+          <div class="sm:col-span-2"><label class="text-xs font-bold">Payment method</label><select id="rcPay" class="inp"></select></div>
+          <div><label class="text-xs font-bold">Currency</label><select id="rcCur" class="inp"><option>IDR</option><option>USD</option></select></div>
+          <div id="rcDetWrap" class="sm:col-span-6"><label class="text-xs font-bold" id="rcDetL">Payment Details</label><input id="rcPayDet" class="inp"></div>
+          <div id="rcRows" class="sm:col-span-6 space-y-2"></div>
+          <div class="sm:col-span-6"><button type="button" class="btn alt text-xs" onclick="addRc()">+ Add Item</button></div>
+          <div class="sm:col-span-2"><label class="text-xs font-bold">Subtotal</label><input id="rcSub" readonly class="inp"></div>
+          <div class="sm:col-span-2"><label class="text-xs font-bold">Special discount</label><input id="rcDisc" type="number" min="0" step="0.01" class="inp"></div>
+          <div class="sm:col-span-2"><label class="text-xs font-bold">Discount Curr</label><select id="rcDiscCur" class="inp"><option>IDR</option><option>USD</option></select></div>
+          <div class="sm:col-span-2"><label class="text-xs font-bold">Final Amount</label><input id="rcFinal" readonly class="inp font-bold"></div>
+          <div class="sm:col-span-4"><label class="text-xs font-bold">Schedule Note</label><input id="rcSched" class="inp"></div>
+          <div class="sm:col-span-6"><label class="text-xs font-bold">General Note</label><input id="rcNote" class="inp"></div>
+          <label class="sm:col-span-6 flex items-center gap-2 text-sm font-bold text-[#78350F]"><input id="rcLog" type="checkbox" checked> Log sale as Completed</label>
+          <button class="btn sm:col-span-6">Generate Receipt 🧾</button>
+        </form>
+        <div id="rcOut" class="hidden space-y-3"><div class="flex gap-2 flex-wrap"><button class="btn" onclick="window.print()"><i class="fa-solid fa-print mr-1"></i>Print PDF</button><button class="btn alt" onclick="dlReceipt()"><i class="fa-solid fa-download mr-1"></i>Download PNG</button></div><div id="rcCard"></div></div>
+        <div class="card p-5"><h3 class="brand text-lg text-[#78350F] mb-2">Recent Receipts</h3><div id="rcList" class="space-y-2"></div></div>
+      </div>
+
+      <div id="at-cat" class="space-y-6 hidden">
+        <form id="setForm" class="card p-5 grid sm:grid-cols-3 gap-3 items-end"><h3 class="brand text-lg sm:col-span-3 text-[#78350F]">💸 Tiered Discounts ($ USD)</h3>
+          <div><label class="text-xs font-bold">Tier 1 Min ($)</label><input id="sMin0" type="number" min="0" class="inp"></div><div><label class="text-xs font-bold">Tier 1 (%)</label><input id="sPct0" type="number" min="0" max="100" class="inp"></div><div class="hidden sm:block"></div>
+          <div><label class="text-xs font-bold">Tier 2 Min ($)</label><input id="sMin1" type="number" min="0" class="inp"></div><div><label class="text-xs font-bold">Tier 2 (%)</label><input id="sPct1" type="number" min="0" max="100" class="inp"></div><div class="hidden sm:block"></div>
+          <div><label class="text-xs font-bold">Tier 3 Min ($)</label><input id="sMin2" type="number" min="0" class="inp"></div><div><label class="text-xs font-bold">Tier 3 (%)</label><input id="sPct2" type="number" min="0" max="100" class="inp"></div><div class="hidden sm:block"></div>
+          <button class="btn sm:col-span-3">Save Tiers</button>
+        </form>
+        <div class="card p-5"><div class="flex justify-between items-center mb-3 flex-wrap gap-2"><h3 class="brand text-lg text-[#78350F]">Catalog Manager</h3><button class="btn text-sm" onclick="editApp()"><i class="fa-solid fa-plus mr-1"></i>Add App</button></div><div id="catList" class="space-y-2"></div></div>
+      </div>
+
+      <div id="at-log" class="space-y-6 hidden">
+        <form id="mForm" class="card p-5 grid sm:grid-cols-6 gap-3 items-end">
+          <div class="sm:col-span-6 brand text-lg text-[#78350F]">📝 Log Twitter Order</div>
+          <div class="sm:col-span-2"><label class="text-xs font-bold">Buyer handle</label><input id="mBuyer" class="inp" placeholder="@username" required></div>
+          <div class="sm:col-span-2"><label class="text-xs font-bold">App</label><select id="mApp" class="inp"></select></div>
+          <div class="sm:col-span-2"><label class="text-xs font-bold">Total units</label><input id="mUnits" type="number" min="0" step="any" class="inp"></div>
+          <div class="sm:col-span-2"><label class="text-xs font-bold">Total amount</label><input id="mTotal" type="number" min="0" step="0.01" class="inp" required></div>
+          <div><label class="text-xs font-bold">Currency</label><select id="mCur" class="inp"><option>IDR</option><option>USD</option></select></div>
+          <div class="sm:col-span-2"><label class="text-xs font-bold">Payment</label><select id="mPay" class="inp"></select></div>
+          <div><label class="text-xs font-bold">Status</label><select id="mStatus" class="inp"><option>Completed</option><option>Pending</option><option>In Progress</option></select></div>
+          <button class="btn sm:col-span-6">Save Order</button>
+        </form>
+        <div class="card p-5 space-y-2"><div class="flex justify-between items-center flex-wrap gap-2"><h3 class="brand text-lg text-[#78350F]">💬 Quick DM Replies</h3><input id="tplH" class="inp !w-40" placeholder="@customer"></div><div id="tplList" class="space-y-2"></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="bg-[#FEF08A] border-t-2 border-[#FDE68A] mt-8 pb-6">
+  <div class="max-w-6xl mx-auto px-4 py-8 grid sm:grid-cols-3 gap-6 text-sm text-[#78350F]">
+    <div><div class="brand text-lg mb-1">@bingbingvote 🐝</div><p class="font-semibold text-xs opacity-90">K-Pop voting specialist on Twitter. Vote together, win together! 💛</p><div class="text-xl mt-2 tracking-widest">🌸🎀🎤✨💛</div></div>
+    <div><div class="font-bold mb-1">Business Hours</div><p id="ftHours" class="font-semibold text-xs opacity-90"></p></div>
+    <div><div class="font-bold mb-1">Follow Us</div><a href="https://twitter.com/bingbingvote" target="_blank" rel="noopener" class="btn inline-block text-xs"><i class="fa-brands fa-x-twitter mr-1"></i>@bingbingvote</a></div>
+  </div>
+  <div class="text-center text-xs text-[#D97706] font-bold">© 2026 @bingbingvote. Made with 💛 for K-Pop fans.</div>
+</footer>
+
+<div id="ov" class="fixed inset-0 bg-pink-900/20 backdrop-blur-sm z-40 hidden"></div>
+
+<aside id="cart" class="fixed top-0 right-0 h-full w-[90%] max-w-md bg-[#FFFDF0] z-50 translate-x-full transition-transform duration-300 flex flex-col shadow-2xl border-l-2 border-[#FBCFE8]">
+  <div class="p-4 flex justify-between items-center bg-[#FEF08A] border-b-2 border-[#FDE68A]">
+    <h2 class="brand text-lg text-[#78350F]"><i class="fa-solid fa-basket-shopping mr-2"></i>Your Cart 🛍️</h2>
+    <div class="flex items-center gap-2"><div id="curTog" class="flex rounded-full border-2 border-[#F59E0B] overflow-hidden text-xs font-bold"><button data-cur="IDR" class="px-3 py-1">IDR</button><button data-cur="USD" class="px-3 py-1">USD</button></div><button id="closeCart" class="text-xl px-2 text-[#78350F]" aria-label="Close cart"><i class="fa-solid fa-xmark"></i></button></div>
+  </div>
+  <div id="cItems" class="p-3 space-y-2 overflow-y-auto flex-1" style="max-height: 60vh;"></div>
+  <div class="p-4 border-t-2 border-[#FDE68A] bg-white space-y-2.5">
+    <div class="grid grid-cols-2 gap-2"><input id="cUser" class="inp !py-1.5 text-xs font-bold" placeholder="@your_twitter_handle"><select id="cPay" class="inp !py-1.5 text-xs font-bold"></select></div>
+    
+    <div class="bg-[#FEFCE8] p-2.5 rounded-2xl border-2 border-[#FDE68A] space-y-1">
+      <label class="block text-[11px] font-bold text-[#78350F]">🗓️ Voting Schedule:</label>
+      <select id="cSchedMode" class="inp !py-1 text-xs" onchange="toggleSchedInput()">
+        <option value="⚡ Instant / As Soon As Possible (ASAP)">⚡ Instant / ASAP</option>
+        <option value="Scheduled Date">🗓️ Scheduled Date</option>
+      </select>
+      <div id="schedDateBox" class="hidden mt-1">
+        <input type="date" id="cSchedDate" class="inp !py-1 text-xs">
+      </div>
+    </div>
+
+    <input id="cNote" class="inp !py-1.5 text-xs" placeholder="Notes / In-game ID (optional)">
+    <div id="cVouch"></div>
+    <div class="text-xs space-y-1 text-[#78350F]" id="cSum"></div>
+    <div class="flex gap-2 pt-1"><button id="clearCart" class="btn alt !py-2 !px-3 text-xs shrink-0"><i class="fa-solid fa-trash-can mr-1"></i>Clear</button><button id="checkout" class="btn flex-1 !py-2 text-xs"><i class="fa-brands fa-twitter mr-1"></i>Checkout via DM ✨</button></div>
+  </div>
+</aside>
+
+<div id="pinM" class="fixed inset-0 z-[60] hidden items-center justify-center bg-pink-900/30 backdrop-blur-sm p-4">
+  <form id="loginF" class="card p-6 w-full max-w-xs pop text-center space-y-3">
+    <h3 class="brand text-lg text-[#78350F]">Admin Login 🔐</h3>
+    <input id="aId" class="inp" placeholder="Admin ID">
+    <input id="pin" type="password" class="inp" placeholder="Password">
+    <p id="pinErr" class="text-rose-600 text-xs font-bold min-h-4"></p>
+    <div class="flex gap-2"><button type="button" class="btn alt flex-1 text-xs" onclick="closePin()">Cancel</button><button class="btn flex-1 text-xs">Login ✨</button></div>
+  </form></div>
+
+<div id="zoomM" class="fixed inset-0 z-[80] hidden bg-black/80 overflow-auto p-4" onclick="if(event.target===this)closeZoom()">
+  <button class="fixed top-3 right-3 text-white text-2xl w-10 h-10" onclick="closeZoom()"><i class="fa-solid fa-xmark"></i></button>
+  <img id="zoomImg" alt="Full proof" class="mx-auto max-w-full rounded-2xl cursor-zoom-in" onclick="toggleZoom()">
+</div>
+
+<div id="proofM" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/40 p-4" onclick="closeProof()">
+  <div class="card p-4 w-full max-w-sm pop max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+    <div class="flex justify-between items-center mb-2"><h3 class="brand text-[#78350F]">Payment Proof</h3><button onclick="closeProof()"><i class="fa-solid fa-xmark text-lg"></i></button></div>
+    <div id="proofBody"></div>
+  </div>
+</div>
+
+<div id="pollM" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/30 p-4"><form id="pollF" class="card p-5 w-full max-w-md pop max-h-[90vh] overflow-y-auto space-y-3">
+ <div class="flex justify-between"><h3 class="brand text-lg text-[#78350F]" id="pollMT">Add Voting Event</h3><button type="button" onclick="closeM('pollM')"><i class="fa-solid fa-xmark text-lg"></i></button></div>
+ <input id="pName" class="inp" placeholder="Event Name" required>
+ <input id="pApp" class="inp" list="appNames" placeholder="App Name" required>
+ <datalist id="appNames"></datalist>
+ <input id="pIdol" class="inp" placeholder="Idol / Category">
+ <div><label class="text-xs font-bold text-[#78350F]">Ends At</label><input id="pEnd" type="datetime-local" class="inp" required></div>
+ <input id="pLink" class="inp" placeholder="Voting Link (https://...)">
+ <button class="btn w-full">Save Event 🌸</button></form></div>
+
+<div id="eoM" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/30 p-4"><form id="eoF" class="card p-5 w-full max-w-lg pop max-h-[92vh] overflow-y-auto grid sm:grid-cols-6 gap-3 items-end">
+  <div class="sm:col-span-6 flex justify-between"><h3 class="brand text-lg text-[#78350F]">✏️ Edit Order & Price</h3><button type="button" onclick="closeM('eoM')"><i class="fa-solid fa-xmark text-lg"></i></button></div>
+  <div class="sm:col-span-3"><label class="text-xs font-bold">Buyer handle</label><input id="eoBuyer" class="inp" required></div>
+  <div class="sm:col-span-3"><label class="text-xs font-bold">App</label><select id="eoApp" class="inp"></select></div>
+  <div class="sm:col-span-6"><label class="text-xs font-bold">Package Note</label><input id="eoPkg" class="inp"></div>
+  <div class="sm:col-span-2"><label class="text-xs font-bold">Total units</label><input id="eoUnits" type="number" min="0" step="any" class="inp"></div>
+  <div class="sm:col-span-2"><label class="text-xs font-bold">Rate ($1)</label><input id="eoRate" type="number" min="0" step="any" class="inp"></div>
+  <div class="sm:col-span-2"><label class="text-xs font-bold">Currency</label><select id="eoCur" class="inp"><option>IDR</option><option>USD</option></select></div>
+  <div class="sm:col-span-6"><button type="button" class="btn alt text-xs" onclick="eoRecalc()">↻ Recalculate Price</button></div>
+  <div class="sm:col-span-2"><label class="text-xs font-bold">Gross price</label><input id="eoGross" type="number" min="0" step="0.01" class="inp"></div>
+  <div class="sm:col-span-2"><label class="text-xs font-bold">Cut/Disc</label><input id="eoCut" type="number" min="0" step="0.01" class="inp" value="0"></div>
+  <div class="sm:col-span-2"><label class="text-xs font-bold">Final total</label><input id="eoTotal" type="number" min="0" step="0.01" class="inp font-bold"></div>
+  <div class="sm:col-span-3"><label class="text-xs font-bold">Voting Schedule</label><input id="eoSched" class="inp"></div>
+  <div class="sm:col-span-3"><label class="text-xs font-bold">Payment method</label><select id="eoPay" class="inp"></select></div>
+  <div class="sm:col-span-4"><label class="text-xs font-bold">Payment details</label><input id="eoPayDet" class="inp"></div>
+  <div class="sm:col-span-2"><label class="text-xs font-bold">Status</label><select id="eoStatus" class="inp"><option>Pending</option><option>In Progress</option><option>Completed</option></select></div>
+  <div class="sm:col-span-6 flex gap-2 flex-wrap"><button class="btn">Save Changes</button><button type="button" class="btn alt" onclick="receiptFromSale()">🧾 Make Receipt</button><button type="button" class="btn alt" onclick="closeM('eoM')">Cancel</button></div>
+</form></div>
+
+<div id="loyM" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/30 p-4" onclick="closeM('loyM')"><div class="card p-5 w-full max-w-sm pop max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+  <div class="flex justify-between mb-2"><h3 class="brand text-lg text-[#78350F]">🐝 Loyalty Card</h3><button onclick="closeM('loyM')"><i class="fa-solid fa-xmark text-lg"></i></button></div>
+  <p class="text-xs text-[#92400E] mb-3 font-semibold">Earn 1 stamp for every completed order. Collect 10 stamps for a <b id="loyVal"></b> voucher! ✨</p>
+  <div class="flex gap-2 mb-3"><input id="loyIn" class="inp" placeholder="@username"><button class="btn shrink-0" onclick="loyCheck()">Check ✨</button></div><div id="loyOut"></div></div></div>
+
+<!-- CUTE VISUAL LOYALTY CARD MODAL FOR PNG EXPORT -->
+<div id="loyDmM" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/30 p-4"><div class="card p-5 w-full max-w-md pop space-y-3">
+  <div class="flex justify-between"><h3 class="brand text-lg text-[#78350F]">🐝 Loyalty Stamp Update</h3><button onclick="closeM('loyDmM')"><i class="fa-solid fa-xmark text-lg"></i></button></div>
+  
+  <div id="visualLoyCard" class="bg-gradient-to-br from-[#FEF08A] via-[#FFFDF0] to-[#FCE7F3] p-5 rounded-3xl border-3 border-[#F59E0B] space-y-3 text-center shadow-md">
+    <div class="flex items-center justify-center gap-2">
+      <span class="w-8 h-8 rounded-full bg-white border-2 border-[#F59E0B] flex items-center justify-center text-lg shadow-sm">🐝</span>
+      <span class="brand text-base text-[#78350F]">@bingbingvote Loyalty Card</span>
+    </div>
+    <div class="text-xs font-bold bg-white px-3.5 py-1 rounded-full border-2 border-[#FBCFE8] text-[#831843] inline-block shadow-sm" id="vCardHandle">@username</div>
+    
+    <div id="vCardGrid" class="grid grid-cols-5 gap-2.5 py-2 max-w-[240px] mx-auto"></div>
+    
+    <div class="text-[11px] font-bold text-[#92400E]" id="vCardStatus">Collect 10 stamps for $3.00 / IDR 50,000 OFF ✨</div>
+  </div>
+
+  <div class="text-xs font-bold text-[#78350F]">Send to: <b id="ldTo"></b></div>
+  <textarea id="ldText" class="inp text-xs font-medium" rows="3"></textarea>
+  <button id="ldDownloadPng" class="btn alt w-full text-xs" onclick="downloadLoyaltyPng()"><i class="fa-solid fa-file-image mr-1"></i>Download Card Image (.PNG) 🌸</button>
+  <button id="ldSend" class="btn w-full text-xs"><i class="fa-brands fa-twitter mr-1"></i>Send Stamp Update to Twitter DM</button>
+  <button id="ldCopy" class="btn alt w-full text-xs">Copy Message Only</button>
+</div></div>
+
+<div id="guideM" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/30 p-4" onclick="closeM('guideM')">
+ <div class="card p-5 w-full max-w-md pop max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+  <div class="flex justify-between mb-2"><h3 class="brand text-lg text-[#78350F]">How to order 💌</h3><button onclick="closeM('guideM')"><i class="fa-solid fa-xmark text-lg"></i></button></div>
+  <ol class="space-y-2 text-xs text-[#78350F] list-decimal pl-5 font-bold">
+   <li>Open <b>Shop</b>, choose a package rate, type total units desired (e.g. 40000), then tap <b>Add to Cart</b>.</li>
+   <li>Open <b>Cart</b>, pick payment method, Twitter handle, and voting schedule.</li>
+   <li id="gDisc"></li>
+   <li>Tap <b>Checkout via Twitter DM</b>. Send the pre-filled DM to @bingbingvote!</li>
+  </ol>
+  <button class="btn w-full mt-4" onclick="closeM('guideM')">Got it! ✨</button>
+ </div></div>
+
+<div id="appM" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/30 p-4">
+ <div class="card p-5 w-full max-w-lg pop max-h-[90vh] overflow-y-auto space-y-3">
+  <div class="flex justify-between"><h3 class="brand text-lg text-[#78350F]" id="appMT">Add App</h3><button onclick="closeM('appM')"><i class="fa-solid fa-xmark text-lg"></i></button></div>
+  <input id="eName" class="inp" placeholder="App Name">
+  <textarea id="eDesc" class="inp" rows="2" placeholder="Description"></textarea>
+  <div><label class="text-xs font-bold">Icon</label><input id="eIcon" class="inp" placeholder="🎵 or https://..."></div>
+  <div class="grid grid-cols-2 gap-2"><div><label class="text-xs font-bold">Unit Name</label><input id="eUnit" class="inp" placeholder="Ruby"></div><div><label class="text-xs font-bold">Units per $1 USD</label><input id="eUpu" type="number" min="0" step="any" class="inp" placeholder="400"></div></div>
+  <label class="flex items-center gap-2 text-sm font-bold text-[#78350F]"><input id="eFeat" type="checkbox"> Feature on Home</label>
+  <label class="flex items-center gap-2 text-sm font-bold text-[#78350F]"><input id="eDisc" type="checkbox" checked> Enable Discount</label>
+  <div><div class="text-xs font-bold mb-1 text-[#78350F]">Packages</div><div id="eRows" class="space-y-2"></div><button class="btn alt text-xs mt-2" onclick="addRow()">+ Add Package</button></div>
+  <button class="btn w-full" onclick="saveApp()">Save App ✨</button>
+ </div></div>
+
+<div id="evM" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/30 p-4">
+ <div class="card p-5 w-full max-w-lg pop max-h-[90vh] overflow-y-auto space-y-3">
+  <div class="flex justify-between"><h3 class="brand text-lg text-[#78350F]" id="evMT">Add Banner</h3><button onclick="closeM('evM')"><i class="fa-solid fa-xmark text-lg"></i></button></div>
+  <input id="eTitle" class="inp" placeholder="Title">
+  <textarea id="eText" class="inp" rows="2" placeholder="Text"></textarea>
+  <button class="btn w-full" onclick="saveEv()">Save Banner ✨</button>
+ </div></div>
+
+<div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-[#78350F] text-[#FEF08A] px-5 py-2.5 rounded-full text-xs font-bold z-[70] hidden text-center max-w-[90vw] border-2 border-[#F59E0B] shadow-lg"></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const RATE=17000, RECIPIENT='@bingbingvote', DM='https://twitter.com/messages/compose?recipient_id='+encodeURIComponent(RECIPIENT);
+const idr=n=>'IDR '+Math.round(n).toLocaleString('en-US');
+const usd=n=>'$'+n.toFixed(2);
+let cur='IDR';
+const fmt=n=>cur==='IDR'?idr(n):usd(n/RATE);
+const PAYS=['PayPal','QRIS','SeaBank','GoPay','ShopeePay'];
+const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CATS=['All','Daily Vote','Award Special','Accounts'];
+const DEF_APPS=[
+ {id:'idolchamp',name:'Idolchamp',icon:'🏆',desc:'Chamsim votes for daily & monthly charts.',pk:[['400 Ruby Chamsim',1,0],['2000 Ruby Chamsim',5,0]]},
+ {id:'mnet',name:'Mnet / Mwave',icon:'📺',desc:'Vote for comeback stages and music shows.',pk:[['100 Votes',1,0],['500 Votes',4.5,0]]},
+ {id:'choeadol',name:'Choeadol',icon:'💖',desc:'Heart votes, fast and safe.',pk:[['1000 Hearts',1.1,0],['5000 Hearts',5,0]]},
+ {id:'upick',name:'UPICK',icon:'🎫',desc:'Tickets for weekly UPICK polls.',pk:[['1000 Jam',1,0],['5000 Jam',4.8,0]]}
+];
+
+const price=(a,i)=>a.pk[i][1]*RATE;
+const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
+let TIERS=ld('bb_tiers',[{min:100,pct:3},{min:150,pct:5},{min:200,pct:7}]), BGM=ld('bb_bgml',[]), AUTH=ld('bb_auth',{id:'admin',pw:'bingbing2026'});
+let APPS=ld('bb_apps',DEF_APPS), EVENTS=ld('bb_events',[]);
+const ico=v=>/^(data:|https?:)/.test(v||'')?`<img src="${esc(v)}" alt="" class="w-full h-full object-cover">`:esc(v||'🎵');
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Storage full')}};
+const today=()=>new Date().toISOString().slice(0,10);
+let cart=ld('bb_cart',[]); cur=ld('bb_cur','IDR');
+let sales=ld('bb_sales',[]);
+let cat='All', rating=5, admin=false, imgData='';
+const STAT=['Pending','In Progress','Completed'];
+
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hidden'),2600)}
+
+function go(t){
+  Object.entries({home:'home',shop:'shop',profile:'profilePg',testi:'testi',admin:'admin'}).forEach(([k,id])=>$('#'+id).classList.toggle('hidden',k!==t));
+  $$('#menu [data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  closeMenu();closeCart();
+  if(t==='admin')renderAdmin();
+  if(t==='home'||t==='profile')renderHome();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderCats(){
+  $('#cats').innerHTML=CATS.map(c=>`<button class="pill ${c===cat?'on':''}" data-c="${c}">${c}</button>`).join('');
+  $$('#cats .pill').forEach(b=>b.onclick=()=>{cat=b.dataset.c;renderCats();renderGrid()});
+}
+function visiblePk(a){return a.pk.map((p,i)=>({p,i})).filter(x=>cat==='All'||CATS[x.p[2]+1]===cat)}
+
+function pkMeta(a,i,val){
+  const p=a.pk[i],u=unitsOf(a,i);
+  if(u){const units=Math.max(0,Math.round(val)||0),v=Math.round(p[1]*RATE*units/u.q);return `✨ Total: ${units.toLocaleString('en-US')} ${pl(u.lab)} = ${usd(v/RATE)} / ${idr(v)}`}
+  const q=Math.max(1,parseInt(val)||1);return `${q} × ${p[0]} = ${usd(p[1]*q)} / ${idr(p[1]*q*RATE)}`;
+}
+function pkHint(id,pre){const a=APPS.find(x=>x.id===id),i=+$('#'+pre+'pk-'+id).value;$('#'+pre+'h-'+id).textContent=pkMeta(a,i,parseFloat($('#'+pre+'q-'+id).value))}
+function pkSel(id,pre){const a=APPS.find(x=>x.id===id),i=+$('#'+pre+'pk-'+id).value,u=unitsOf(a,i);$('#'+pre+'q-'+id).value=u?u.q:1;$('#'+pre+'l-'+id).textContent=u?`Total ${pl(u.lab)} desired`:'Quantity (packs)';pkHint(id,pre)}
+
+const cardHtml=(a,pre,pks)=>{
+  const f=pks[0],fu=f?unitsOf(a,f.i):null;
+  return `<article class="card p-4 flex flex-col gap-2">
+  <div class="flex items-center gap-2.5"><div class="w-11 h-11 shrink-0 rounded-2xl bg-[#FEF08A] border-2 border-[#F59E0B] overflow-hidden flex items-center justify-center text-2xl shadow-sm">${ico(a.icon)}</div>
+  <div class="min-w-0"><h3 class="brand text-base leading-tight text-[#78350F]">${esc(a.name)}</h3><div class="flex flex-wrap gap-1 mt-0.5">${a.disc===false?'':'<span class="dpill !py-0 !px-1.5 text-[9px]">✨ discounts</span>'}</div></div></div>
+  <p class="text-xs text-[#92400E] flex-1 font-semibold">${esc(a.desc)}</p>
+  <select id="${pre}pk-${a.id}" class="inp text-xs" onchange="pkSel('${a.id}','${pre}')">${pks.map(x=>`<option value="${x.i}">${esc(x.p[0])} – ${usd(x.p[1])} (${idr(x.p[1]*RATE)})</option>`).join('')}</select>
+  <div id="${pre}l-${a.id}" class="text-[10px] font-bold text-[#D97706] -mb-1">${fu?`Total ${esc(pl(fu.lab))} desired`:'Quantity'}</div>
+  <div class="flex gap-2"><input id="${pre}q-${a.id}" type="number" min="1" step="1" value="${fu?fu.q:1}" oninput="pkHint('${a.id}','${pre}')" class="inp !w-24 text-center"><button class="btn flex-1 !px-2 text-xs" onclick="addCart('${a.id}','${pre}')"><i class="fa-solid fa-cart-plus mr-1"></i>Add to Cart</button></div>
+  <div id="${pre}h-${a.id}" class="text-[11px] font-bold text-[#78350F] min-h-[1rem]">${f?pkMeta(a,f.i,fu?fu.q:1):''}</div></article>`};
+
+function renderGrid(){
+  const q=$('#search').value.toLowerCase();
+  const list=APPS.filter(a=>a.name.toLowerCase().includes(q)&&visiblePk(a).length);
+  $('#grid').innerHTML=list.length?list.map(a=>cardHtml(a,'s',visiblePk(a))).join(''):'<p class="col-span-full text-center py-10 opacity-60 font-semibold">No apps found.</p>';
+}
+function renderFeatured(){
+  const list=APPS.filter(a=>a.feat&&a.pk.length).slice(0,8);
+  $('#fGrid').innerHTML=list.length?list.map(a=>cardHtml(a,'f',a.pk.map((p,i)=>({p,i})))).join(''):'<p class="col-span-full text-center py-6 opacity-60 font-semibold">No featured apps yet.</p>';
+}
+$('#search').oninput=renderGrid;
+
+function addCart(id,pre){
+  const a=APPS.find(x=>x.id===id),i=+$('#'+pre+'pk-'+id).value,u=unitsOf(a,i),val=parseFloat($('#'+pre+'q-'+id).value);
+  let q;
+  if(u){const units=Math.round(val);if(!(units>=1))return toast('Please enter desired total units');q=units/u.q}
+  else q=Math.max(1,parseInt(val)||1);
+  const ex=cart.find(c=>c.id===id&&c.i===i);
+  ex?ex.q+=q:cart.push({id,i,q});
+  sv('bb_cart',cart);renderCart();
+  toast(u?`${Math.round(u.q*q).toLocaleString('en-US')} ${pl(u.lab)} added to cart ✨`:`${a.name} added to cart ✨`);
+}
+const pl=l=>/[^aeiou]y$/i.test(l)?l.slice(0,-1)+'ies':l;
+function unitsOf(a,i){const n=a.pk[i][0];if(/account/i.test(n))return null;const m=n.match(/(\d[\d,]*)\s*([A-Za-z][A-Za-z]*(?:\s[A-Za-z]+)?)?/);if(!m)return null;return{q:parseInt(m[1].replace(/,/g,''),10),lab:(m[2]||'units').trim()}}
+const isU=(a,it)=>!!unitsOf(a,it.i);
+const unitCount=(a,it)=>{const u=unitsOf(a,it.i);return u?Math.round(u.q*it.q):0};
+const unitTxt=(a,it)=>{const u=unitsOf(a,it.i);return u?`${unitCount(a,it).toLocaleString('en-US')} ${pl(u.lab)}`:`x${it.q}`};
+
+function appTotals(){const m={};cart.forEach(it=>{const a=APPS.find(x=>x.id===it.id);if(!a||!a.pk[it.i])return;const g=m[a.id]=m[a.id]||{a,sub:0,units:{}};g.sub+=lineOf(it);const u=unitsOf(a,it.i);if(u){const k=u.lab.toLowerCase();g.units[k]=g.units[k]||{lab:u.lab,q:0};g.units[k].q+=u.q*it.q}});return Object.values(m)}
+const unitStr=g=>Object.values(g.units).map(u=>`${u.q.toLocaleString('en-US')} ${pl(u.lab)}`).join(' + ');
+const lineOf=it=>Math.round(price(APPS.find(x=>x.id===it.id),it.i)*it.q);
+const okDisc=it=>{const a=APPS.find(x=>x.id===it.id);return a&&a.disc!==false};
+const TS=()=>[...TIERS].sort((a,b)=>a.min-b.min);
+function tierFor(u){let t=null;TS().forEach((x,i)=>{if(u>=x.min)t={...x,n:i+1}});return t}
+
+function calc(){
+  const qty=cart.reduce((s,c)=>s+c.q,0);
+  const sub=cart.reduce((s,c)=>s+lineOf(c),0);
+  const elig=cart.filter(okDisc).reduce((s,c)=>s+lineOf(c),0);
+  const t=tierFor(elig/RATE),pct=t?t.pct:0,disc=elig*pct/100;
+  if(useV&&!vAvail())useV=false;
+  const v=useV?Math.min(LOYV.idr,sub-disc):0;
+  return{qty,sub,elig,pct,disc,v,total:sub-disc-v,tier:t?t.n:0};
+}
+
+function toggleSchedInput(){
+  const mode=$('#cSchedMode').value;
+  $('#schedDateBox').classList.toggle('hidden', mode !== 'Scheduled Date');
+}
+
+function renderCart(){
+  const c=calc();
+  $('#badge').textContent=cart.length;
+  $$('#curTog button').forEach(b=>b.className='px-3 py-1 '+(b.dataset.cur===cur?'bg-[#FEF08A] text-[#78350F]':'bg-white text-gray-500'));
+  
+  $('#cItems').innerHTML=cart.length?cart.map((it,n)=>{
+    const a=APPS.find(x=>x.id===it.id),p=a.pk[it.i];
+    return `<div class="card p-3 flex gap-3 items-center border-[#FDE68A]">
+      <div class="w-9 h-9 shrink-0 rounded-xl overflow-hidden flex items-center justify-center text-2xl border border-[#F59E0B] bg-[#FEF08A]">${ico(a.icon)}</div>
+      <div class="flex-1 min-w-0"><div class="font-bold text-sm text-[#78350F]">${esc(a.name)}</div><div class="text-xs font-semibold text-[#92400E]">${esc(p[0])} · ${unitTxt(a,it)}</div></div>
+      <div class="text-right"><div class="text-sm font-bold text-[#78350F]">${fmt(lineOf(it))}</div><button class="text-xs text-rose-500 font-bold" onclick="rm(${n})"><i class="fa-solid fa-trash"></i></button></div></div>`}).join('')
+    :'<div class="text-center py-12 text-[#92400E] font-semibold"><div class="text-4xl mb-2">🛍️</div>Your cart is empty!</div>';
+
+  const TSn=TS(),nxt=TSn.find(x=>c.elig/RATE<x.min),nI=nxt?TSn.indexOf(nxt)+1:0;
+  const hint=cart.length?`<div class="dpill !rounded-xl !whitespace-normal w-full justify-center">✨ ${c.elig===0?'Items not eligible for discount':nxt?`Add ${fmt((nxt.min-c.elig/RATE)*RATE)} more for Tier ${nI}: ${nxt.pct}% OFF ✨`:`Top tier unlocked: ${c.pct}% OFF ✨`}</div>`:'';
+  
+  $('#cSum').innerHTML=`${cart.length?tierBar(c.elig/RATE)+tierChips(c.elig/RATE):''}${hint}
+   <div class="flex justify-between font-semibold"><span>Subtotal</span><span>${fmt(c.sub)}</span></div>
+   <div class="flex justify-between text-emerald-700 font-bold"><span class="flex items-center gap-1">Discount ${c.tier?`<span class="dpill !py-0 !px-2">✨ Tier ${c.tier} · ${c.pct}% OFF</span>`:''}</span><span>−${fmt(c.disc)}</span></div>${c.v?`<div class="flex justify-between font-bold"><span>🎟️ Loyalty voucher</span><span>−${fmt(c.v)}</span></div>`:''}
+   <div class="flex justify-between font-bold text-sm border-t border-[#FDE68A] pt-1"><span>FINAL TOTAL</span><span>${fmt(c.total)}</span></div>`;
+  
+  $('#cVouch').innerHTML=vAvail()?`<label class="dpill !rounded-xl !whitespace-normal w-full justify-center cursor-pointer"><input type="checkbox" ${useV?'checked':''} onchange="useV=this.checked;renderCart()"> 🎟️ Use loyalty voucher: −${fmt(LOYV.idr)}</label>`:'';
+}
+
+const rm=n=>{cart.splice(n,1);sv('bb_cart',cart);renderCart()};
+const openCart=()=>{$('#cart').classList.remove('translate-x-full');$('#ov').classList.remove('hidden')};
+const closeCart=()=>{$('#cart').classList.add('translate-x-full');$('#ov').classList.add('hidden')};
+$('#cartBtn').onclick=openCart;$('#closeCart').onclick=closeCart;$('#ov').onclick=()=>{closeCart();closeMenu()};
+
+$('#checkout').onclick=()=>{
+  if(!cart.length)return toast('Your cart is empty');
+  let u=$('#cUser').value.trim();
+  if(!u)return toast('Please enter your Twitter handle');
+  if(!u.startsWith('@'))u='@'+u;
+  
+  const c=calc(), note=$('#cNote').value.trim(), pay=$('#cPay').value;
+  const mode=$('#cSchedMode').value;
+  const schedTxt=mode==='Scheduled Date'?`Scheduled Date (${$('#cSchedDate').value||today()})`:mode;
+  
+  const itemsText=cart.map((it,n)=>{
+    const a=APPS.find(x=>x.id===it.id), p=a.pk[it.i];
+    return `${n+1}. ${a.name} - ${unitTxt(a,it)}\n   Rate: ${p[0]}\n   Price: ${fmt(lineOf(it))}`;
+  }).join('\n\n');
+
+  const msg=`Hi @bingbingvote! I'd like to place an order 💛\n\nTwitter: ${u}\n\n🛍️ ORDER DETAILS:\n${itemsText}\n\n🗓️ VOTING SCHEDULE:\n• Mode: ${schedTxt}\n\n💳 PAYMENT & SUMMARY:\n• Subtotal: ${fmt(c.sub)}\n• Discount (Tier ${c.tier||0}, ${c.pct}% OFF): -${fmt(c.disc)}${c.v?'\n• Loyalty voucher: -'+fmt(c.v):''}\n• FINAL TOTAL: ${fmt(c.total)}\n• Payment Method: ${pay}\n• Notes: ${note||'-'}\n\nPlease send the payment details. Thank you! ✨`;
+
+  sales.unshift({id:Date.now(),date:today(),buyer:u,app:cart.map(it=>APPS.find(x=>x.id===it.id).name).join(', '),pkg:cart.map(it=>unitTxt(APPS.find(x=>x.id===it.id),it)).join(', '),total:c.total,amt:c.total,pay,status:'Pending',sched:schedTxt});
+  sv('bb_sales',sales);
+  
+  if(c.v>0){useVoucher(u);useV=false}
+  const url=`${DM}&text=${encodeURIComponent(msg)}`;
+  try{navigator.clipboard.writeText(msg)}catch(e){}
+  const w=window.open(url,'_blank'); if(!w)location.href=url;
+  cart=[];sv('bb_cart',cart);renderCart();closeCart();
+};
+
+let TM=ld('bb_testi2',[]), tmEdit=null, tmImgs=[];
+const starStr=r=>'★'.repeat(r)+'☆'.repeat(5-r);
+function renderTesti(){
+  $('#tList').innerHTML=TM.length?TM.map((t,i)=>`<div class="card p-4 flex flex-col gap-2"><div class="flex justify-between items-center"><b class="text-sm text-[#78350F]">${esc(t.n)}</b><span class="text-[#F59E0B] text-sm">${starStr(t.r)}</span></div>
+    <span class="text-xs bg-[#FEF08A] border border-[#F59E0B] text-[#78350F] rounded-full px-2.5 py-0.5 w-fit font-bold">${esc(t.app)}</span><p class="text-sm flex-1 font-semibold text-[#92400E]">${esc(t.t)}</p></div>`).join('')
+    :'<p class="col-span-full text-center py-10 text-[#92400E] font-semibold">No testimonials yet.</p>';
+}
+
+let QR=ld('bb_qris',{src:''}),qrPng='',RECEIPTS=ld('bb_receipts',[]);
+function qrClear(){QR={src:''};sv('bb_qris',QR);$('#qrPrev').classList.add('hidden');$('#qrEmpty').classList.remove('hidden');toast('QRIS removed')}
+$('#qrFile').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const rd=new FileReader();rd.onload=()=>{QR={src:rd.result};sv('bb_qris',QR);$('#qrPrev').src=QR.src;$('#qrPrev').classList.remove('hidden');$('#qrEmpty').classList.add('hidden');toast('QRIS updated ✨')};rd.readAsDataURL(f);
+};
+
+const rcOptHtml=()=>APPS.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');
+const rcRow=()=>`<div class="rcr grid grid-cols-12 gap-1 items-center"><select class="inp col-span-5 ra" onchange="rcSum()">${rcOptHtml()}</select><input type="number" min="0" step="any" class="inp col-span-5 ru" placeholder="Total units" oninput="rcSum()"><button type="button" class="col-span-2 text-rose-500 font-bold text-center" onclick="this.parentNode.remove();rcSum()"><i class="fa-solid fa-xmark"></i></button></div>`;
+const addRc=()=>{$('#rcRows').insertAdjacentHTML('beforeend',rcRow());rcSum()};
+
+function rcCalc(){
+  const cur=$('#rcCur').value, dv=parseFloat($('#rcDisc').value)||0;
+  let sub=0, items=[];
+  $$('#rcRows .rcr').forEach(r=>{
+    const id=r.querySelector('.ra').value, u=parseFloat(r.querySelector('.ru').value)||0;
+    const a=APPS.find(x=>x.id===id);
+    if(a&&u>0){
+      const amt=u*(a.pk[0][1]*RATE/unitsOf(a,0).q);
+      sub+=amt; items.push({app:a.name, u:`${u.toLocaleString('en-US')} ${pl(unitsOf(a,0).lab)}`, amt});
+    }
+  });
+  return{items,sub,ded:dv,total:Math.max(0,sub-dv),cur};
+}
+function rcSum(){
+  const c=rcCalc(); $('#rcSub').value=money(c.sub,c.cur); $('#rcFinal').value=money(c.total,c.cur);
+}
+
+function showReceipt(r){
+  const m=n=>money(n,r.cur),hr='<hr style="border:0;border-top:2px dashed #F59E0B;margin:.8rem 0">',row=(a,b)=>`<div style="display:flex;justify-content:space-between;gap:.5rem;"><span>${a}</span><b>${b}</b></div>`;
+  const items=r.items.map(i=>`<div style="display:flex;justify-content:space-between;border:2px solid #F59E0B;border-radius:1rem;padding:.4rem .7rem;background:#FEF08A;color:#78350F"><div><b>${esc(i.app)}</b><div style="font-size:.75rem">${esc(i.u)}</div></div><b>${m(i.amt)}</b></div>`).join('');
+  
+  $('#rcCard').innerHTML=`<div id="rcInner" style="background:#FFFDF0;border:3px solid #FBCFE8;border-radius:1.75rem;padding:1.5rem;max-width:24rem;margin:0 auto;color:#78350F;font-family:Quicksand,sans-serif">
+   <div style="text-align:center"><div style="font-family:Comfortaa,sans-serif;font-weight:700;font-size:1.3rem">@bingbingvote 🐝</div><div style="font-size:.75rem;color:#D97706">K-Pop Voting Specialist ✨</div></div>${hr}
+   <div style="font-size:.75rem">${row('Customer',esc(r.buyer))}${row('Payment',esc(r.pay||'-'))}${r.sched?row('Schedule',esc(r.sched)):''}</div>${hr}
+   <div style="font-size:.85rem;display:grid;gap:.45rem">${items}</div>${hr}
+   <div style="font-size:1.1rem">${row('TOTAL',m(r.total))}</div>
+   ${r.payDet?`<div style="margin-top:.8rem;padding:.55rem;border:2px dashed #F59E0B;border-radius:1rem;font-size:.8rem;background:#FEFCE8"><b>Pay to:</b> ${esc(r.payDet)}</div>`:''}
+   ${r.pay==='QRIS'&&QR.src?`<div style="text-align:center;margin-top:.9rem"><img src="${QR.src}" style="width:11rem;margin:0 auto;display:block;border-radius:1rem"><div style="font-size:.7rem;margin-top:.3rem;color:#D97706">Scan QRIS to pay ✨</div></div>`:''}
+   </div>`;
+  $('#rcOut').classList.remove('hidden');
+}
+
+function dlReceipt(){
+  html2canvas($('#rcInner')).then(c=>{const a=document.createElement('a');a.href=c.toDataURL();a.download='receipt.png';a.click()});
+}
+
+function renderAdmin(){
+  $('#locked').classList.toggle('hidden',admin);$('#dash').classList.toggle('hidden',!admin);
+  if(!admin)return;
+  const rev=sales.filter(s=>s.status==='Completed').reduce((a,s)=>a+s.total,0);
+  $('#stats').innerHTML=[['💰','Revenue',idr(rev)],['🧾','Total Orders',sales.length],['🐝','Active Users',Object.keys(LOY).length]]
+    .map(s=>`<div class="card p-5"><div class="text-2xl">${s[0]}</div><div class="text-xs text-[#92400E] mt-1 font-bold">${s[1]}</div><div class="brand text-xl text-[#78350F]">${s[2]}</div></div>`).join('');
+  
+  $('#sBody').innerHTML=sales.map(s=>`<tr class="border-b border-[#FDE68A] text-[#78350F]">
+    <td class="p-2">${s.date}</td><td>${esc(s.buyer)}</td><td>${esc(s.app)}</td><td>${esc(s.pkg)}</td><td>${idr(s.total)}</td><td>${esc(s.pay||'-')}</td><td>${esc(s.sched||'ASAP')}</td>
+    <td><button onclick="cycle('${s.id}')" class="px-2.5 py-0.5 rounded-full text-xs font-bold border border-[#F59E0B] bg-[#FEF08A]">${s.status}</button></td>
+    <td class="whitespace-nowrap"><button class="px-1 text-[#D97706]" onclick="editOrder('${s.id}')"><i class="fa-solid fa-pen"></i></button></td></tr>`).join('');
+}
+
+const cycle=id=>{const s=sales.find(x=>String(x.id)===id);s.status=STAT[(STAT.indexOf(s.status)+1)%3];sv('bb_sales',sales);renderAdmin();if(s.status==='Completed')awardStamp(s)};
+
+function editOrder(id){
+  const s=sales.find(x=>String(x.id)===id);if(!s)return;
+  $('#eoBuyer').value=s.buyer; $('#eoPkg').value=s.pkg; $('#eoTotal').value=s.total; $('#eoSched').value=s.sched||'';
+  openM('eoM');
+}
+
+function openPin(){$('#pinM').classList.replace('hidden','flex')}
+const closePin=()=>$('#pinM').classList.replace('flex','hidden');
+$('#loginF').onsubmit=e=>{
+  e.preventDefault();
+  if($('#aId').value===AUTH.id&&$('#pin').value===AUTH.pw){admin=true;closePin();renderAdmin();toast('Welcome back! ✨')}
+  else $('#pinErr').textContent='Invalid ID or Password';
+};
+const lock=()=>{admin=false;renderAdmin()};
+
+const STAMPS=10;
+let LOYV=ld('bb_loyv',{usd:3,idr:50000}), LOY=ld('bb_loy',{}), useV=false, ldH='';
+const lget=h=>Object.assign({stamps:0,vouchers:0},LOY[h]||{});
+const lset=(h,o)=>{LOY[h]=o;sv('bb_loy',LOY)};
+
+function renderVisualLoyaltyCard(h){
+  const L=lget(h);
+  $('#vCardHandle').textContent=h;
+  $('#vCardGrid').innerHTML=Array.from({length:STAMPS},(_,i)=>`<div class="aspect-square rounded-full border-2 border-[#F59E0B] flex items-center justify-center text-sm ${i<L.stamps?'bg-[#FEF08A]':'bg-white'} shadow-sm">${i<L.stamps?'🐝':'⚪'}</div>`).join('');
+  $('#vCardStatus').textContent=L.vouchers?`🎟️ ${L.vouchers} Voucher Ready ($3.00 / IDR 50,000 OFF)`:`Collect 10 stamps for $3.00 / IDR 50,000 OFF ✨`;
+}
+
+function downloadLoyaltyPng(){
+  html2canvas($('#visualLoyCard')).then(c=>{
+    const a=document.createElement('a'); a.href=c.toDataURL('image/png'); a.download=`loyalty-card-${ldH}.png`; a.click();
+  });
+}
+
+function openLoyDm(h,done){
+  ldH=h; $('#ldTo').textContent=h;
+  renderVisualLoyaltyCard(h);
+  const L=lget(h);
+  $('#ldText').value=`Thanks for ordering at @bingbingvote! 🐝 Your current stamps: [${L.stamps}/${STAMPS}] Only ${STAMPS-L.stamps} more to unlock a $3.00 / IDR 50,000 voucher! 💛✨`;
+  openM('loyDmM');
+}
+
+function awardStamp(sale){
+  const h=sale.buyer; if(!h||sale.status!=='Completed')return;
+  const L=lget(h); L.stamps=(L.stamps||0)+1;
+  if(L.stamps>=STAMPS){L.vouchers=(L.vouchers||0)+1; L.stamps=0}
+  lset(h,L); openLoyDm(h,true);
+}
+
+const openM=id=>$('#'+id).classList.replace('hidden','flex'), closeM=id=>$('#'+id).classList.replace('flex','hidden');
+const money=(n,c)=>c==='USD'?usd(n):idr(n);
+const tierBar=eu=>`<div class="relative h-3 rounded-full border-2 border-[#F59E0B] bg-white overflow-hidden"><div class="h-full bg-[#FEF08A]" style="width:${Math.min(100,eu/2)}%"></div></div>`;
+const tierChips=eu=>`<div class="flex gap-1">${TS().map(t=>`<span class="dpill ${eu>=t.min?'':'off'}">${t.pct}% OFF</span>`).join('')}</div>`;
+
+function renderHome(){
+  $('#pHero').innerHTML=`<div class="p-6 bg-[#FEF08A] rounded-3xl border-2 border-[#F59E0B] m-4 shadow-sm"><div class="brand text-2xl text-[#78350F]">@bingbingvote ✨</div><p class="text-xs font-bold text-[#92400E] mt-1">Your trusted K-Pop voting specialist 💛</p></div>`;
+  renderFeatured();
+}
+
+renderCats(); renderGrid(); renderHome();
+</script>
+</body>
+</html>
